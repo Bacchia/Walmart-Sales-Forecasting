@@ -16,6 +16,7 @@ def merge_and_enrich(base_df, stores_df, features_df):
     
     markdown_cols = ['MarkDown1', 'MarkDown2', 'MarkDown3', 'MarkDown4', 'MarkDown5']
     df[markdown_cols] = df[markdown_cols].fillna(0)
+    df['Has_Markdown'] = (df[markdown_cols].sum(axis=1) > 0).astype(int)
     
     df['CPI'] = df['CPI'].fillna(df['CPI'].median())
     df['Unemployment'] = df['Unemployment'].fillna(df['Unemployment'].median())
@@ -26,18 +27,20 @@ def merge_and_enrich(base_df, stores_df, features_df):
     df['Day'] = df['Date'].dt.day
     df['IsHoliday'] = df['IsHoliday'].astype(int)
     
+    df['Month_Sin'] = np.sin(2 * np.pi * df['Month'] / 12)
+    df['Month_Cos'] = np.cos(2 * np.pi * df['Month'] / 12)
+    df['Week_Sin'] = np.sin(2 * np.pi * df['Week'] / 52)
+    df['Week_Cos'] = np.cos(2 * np.pi * df['Week'] / 52)
+    
     return df
 
 def get_model_ready_data(train_raw, stores, features, split_date='2012-01-01'):
-    """
-    Cleans, splits, and packages the data along with its preprocessor object.
-    Returns: X_train, y_train, X_val, y_val, is_holiday_val, preprocessor
-    """
     df_clean = merge_and_enrich(train_raw, stores, features)
     
     num_features = ['Size', 'Temperature', 'Fuel_Price', 'MarkDown1', 'MarkDown2', 
                     'MarkDown3', 'MarkDown4', 'MarkDown5', 'CPI', 'Unemployment', 
-                    'Year', 'Month', 'Week', 'Day', 'IsHoliday']
+                    'Year', 'Month', 'Week', 'Day', 'IsHoliday', 'Has_Markdown',
+                    'Month_Sin', 'Month_Cos', 'Week_Sin', 'Week_Cos']
     cat_features = ['Type']
     features_list = num_features + cat_features
     
@@ -46,7 +49,6 @@ def get_model_ready_data(train_raw, stores, features, split_date='2012-01-01'):
     
     X_train = df_clean[train_mask][features_list]
     y_train = df_clean[train_mask]['Weekly_Sales']
-    
     X_val = df_clean[val_mask][features_list]
     y_val = df_clean[val_mask]['Weekly_Sales']
     is_holiday_val = df_clean[val_mask]['IsHoliday']
