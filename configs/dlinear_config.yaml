@@ -1,0 +1,11 @@
+model:
+  name: "Walmart_DLinear_Baseline"
+  params:
+    seq_len: 12          
+    pred_len: 43         
+    learning_rate: 0.005
+    max_epochs: 10
+    batch_size: 128
+    hidden_dim: 64
+data:
+  split_date: "2012-01-01"

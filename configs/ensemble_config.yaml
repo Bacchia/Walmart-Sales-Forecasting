@@ -1,0 +1,11 @@
+ensemble:
+  name: "Walmart_Tree_DeepLearning_Blend"
+  weights:
+    xgb_weight: 0.60
+    lgb_weight: 0.00
+    nn_weight: 0.40
+  models:
+    xgb_registry_path: "models:/Walmart_XGBoost_Baseline/1"
+    lgb_registry_path: "models:/Walmart_LightGBM_Baseline/2"
+data:
+  split_date: "2012-01-01"
