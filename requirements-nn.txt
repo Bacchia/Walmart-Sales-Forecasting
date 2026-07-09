@@ -1,0 +1,12 @@
+# Extra dependencies for the neural-network (deep learning) models.
+# Install on top of requirements.txt:  pip install -r requirements-nn.txt
+# These are additive so they don't disturb the tree-model setup.
+
+neuralforecast>=1.7.5   # DLinear, N-BEATS, PatchTST in one consistent API
+torch>=2.2.0            # deep learning backend (installs CPU build by default on Windows)
+matplotlib>=3.8.0       # plots for EDA / results in notebooks
+mlflow>=3.14.0          # experiment tracking (same as the tree models)
+dagshub>=0.7.0          # hosts our MLflow server
+pyyaml>=6.0.0           # read model configs from configs/*.yaml
+jupyterlab>=4.0.0       # run the .ipynb notebooks in the browser
+ipykernel>=6.29.0       # Jupyter kernel for the venv
