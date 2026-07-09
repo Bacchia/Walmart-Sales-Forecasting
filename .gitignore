@@ -1,3 +1,10 @@
+# Project data & experiment artifacts (do NOT commit large/Kaggle files)
+data/
+mlruns/
+saved_models/
+*.zip
+submission*.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
