@@ -1,0 +1,12 @@
+model:
+  name: "Walmart_NBEATS"
+  params:
+    input_size: 52
+    max_steps: 1000
+    stack_types: ["identity", "identity"]
+    n_blocks: [3, 3]
+    scaler_type: "robust"
+    start_padding_enabled: true
+    random_seed: 42
+data:
+  split_date: "2012-01-01"
