@@ -128,3 +128,17 @@ def temporal_split(Y_df, split_date="2012-01-01"):
     valid_df = Y_df[Y_df["ds"] >= split].reset_index(drop=True)
     horizon = int(valid_df["ds"].nunique())
     return train_df, valid_df, horizon
+
+
+def get_real_validation(train_raw, stores, features, split_date="2012-01-01"):
+    """Return the REAL observed validation rows (no gap-fill zeros).
+
+    These are the same rows the tree models score on (from merge_and_enrich,
+    Date >= split_date), so WMAE computed here is directly comparable to the
+    tree/tabular models. Columns: unique_id, ds, y, IsHoliday.
+    """
+    df = merge_and_enrich(train_raw, stores, features)
+    df = df[df["Date"] >= pd.Timestamp(split_date)].copy()
+    df["unique_id"] = df["Store"].astype(str) + "_" + df["Dept"].astype(str)
+    df = df.rename(columns={"Date": "ds", "Weekly_Sales": "y"})
+    return df[["unique_id", "ds", "y", "IsHoliday"]].reset_index(drop=True)

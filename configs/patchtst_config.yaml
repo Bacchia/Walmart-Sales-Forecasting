@@ -1,0 +1,15 @@
+model:
+  name: "Walmart_PatchTST"
+  params:
+    input_size: 104
+    patch_len: 8
+    stride: 4
+    encoder_layers: 3
+    n_heads: 8
+    hidden_size: 128
+    linear_hidden_size: 256
+    max_steps: 800
+    start_padding_enabled: true
+    random_seed: 42
+data:
+  split_date: "2012-01-01"
