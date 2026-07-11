@@ -1,0 +1,8 @@
+model:
+  name: "Walmart_SARIMA"
+  params:
+    sample_size: 10
+    order: [1, 1, 1]
+    seasonal_order: [0, 1, 1, 52]
+data:
+  split_date: "2012-01-01"
