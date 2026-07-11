@@ -1,0 +1,7 @@
+model:
+  name: "Walmart_Prophet"
+  params:
+    sample_size: 30
+    yearly_seasonality: true
+data:
+  split_date: "2012-01-01"
