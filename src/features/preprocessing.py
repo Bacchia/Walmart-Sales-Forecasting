@@ -38,9 +38,10 @@ def get_model_ready_data(train_raw, stores, features_raw, split_date="2012-01-01
     y_val = val_df['Weekly_Sales']
     is_holiday_val = val_df['IsHoliday'].values
     
-    categorical_features = ['Store_Dept', 'Type']
+    categorical_features = ['Type']
     numeric_features = [
-        'Temperature', 'Fuel_Price_Delta', 'CPI_Delta', 'Unemployment_Delta', 
+        'Store', 'Dept',
+        'Temperature', 'Fuel_Price_Delta', 'CPI_Delta', 'Unemployment_Delta',
         'MarkDown1', 'MarkDown2', 'MarkDown3', 'MarkDown4', 'MarkDown5',
         'Size', 'WeekOfYear', 'Is_Black_Friday', 'Pre_Christmas', 'IsHoliday'
     ]
@@ -60,7 +61,9 @@ def get_model_ready_data(train_raw, stores, features_raw, split_date="2012-01-01
         ('cat', cat_transformer, categorical_features)
     ], remainder='drop')
     
-    X_train_transformed = preprocessor.fit_transform(train_df[numeric_features + categorical_features])
-    X_val_transformed = preprocessor.transform(val_df[numeric_features + categorical_features])
-    
-    return X_train_transformed, y_train, X_val_transformed, y_val, is_holiday_val, preprocessor
+    # Return RAW feature frames; the model Pipeline applies `preprocessor` itself.
+    # (Returning pre-transformed arrays caused a double-transform when wrapped in a Pipeline.)
+    X_train = train_df[numeric_features + categorical_features]
+    X_val = val_df[numeric_features + categorical_features]
+
+    return X_train, y_train, X_val, y_val, is_holiday_val, preprocessor
