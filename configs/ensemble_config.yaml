@@ -5,4 +5,8 @@ model:
     seq_len: 12
     pred_len: 43
 ensemble:
-  search_weights: [0.3, 0.4, 0.5, 0.6, 0.7]
+  search_space:
+    - {xgb: 0.4, lgb: 0.1, nn: 0.5}
+    - {xgb: 0.3, lgb: 0.2, nn: 0.5}
+    - {xgb: 0.4, lgb: 0.2, nn: 0.4}
+    - {xgb: 0.3, lgb: 0.1, nn: 0.6}
