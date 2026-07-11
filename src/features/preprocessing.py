@@ -1,63 +1,66 @@
 import pandas as pd
 import numpy as np
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
 
-def merge_and_enrich(base_df, stores_df, features_df):
-    df = base_df.copy()
-    
+def merge_and_enrich(train_raw, stores, features_raw):
+    df = train_raw.merge(stores, on="Store", how="left")
+    df = df.merge(features_raw, on=["Store", "Date", "IsHoliday"], how="left")
     df['Date'] = pd.to_datetime(df['Date'])
-    features_cp = features_df.copy()
-    features_cp['Date'] = pd.to_datetime(features_cp['Date'])
-    
-    features_cp = features_cp.drop(columns=['IsHoliday'], errors='ignore')
-    df = df.merge(stores_df, on='Store', how='left')
-    df = df.merge(features_cp, on=['Store', 'Date'], how='left')
-    
-    markdown_cols = ['MarkDown1', 'MarkDown2', 'MarkDown3', 'MarkDown4', 'MarkDown5']
-    df[markdown_cols] = df[markdown_cols].fillna(0)
-    df['Has_Markdown'] = (df[markdown_cols].sum(axis=1) > 0).astype(int)
-    
-    df['CPI'] = df['CPI'].fillna(df['CPI'].median())
-    df['Unemployment'] = df['Unemployment'].fillna(df['Unemployment'].median())
-    
-    df['Year'] = df['Date'].dt.year
-    df['Month'] = df['Date'].dt.month
-    df['Week'] = df['Date'].dt.isocalendar().week.astype(int)
-    df['Day'] = df['Date'].dt.day
-    df['IsHoliday'] = df['IsHoliday'].astype(int)
-    
-    df['Month_Sin'] = np.sin(2 * np.pi * df['Month'] / 12)
-    df['Month_Cos'] = np.cos(2 * np.pi * df['Month'] / 12)
-    df['Week_Sin'] = np.sin(2 * np.pi * df['Week'] / 52)
-    df['Week_Cos'] = np.cos(2 * np.pi * df['Week'] / 52)
-    
     return df
 
-def get_model_ready_data(train_raw, stores, features, split_date='2012-01-01'):
-    df_clean = merge_and_enrich(train_raw, stores, features)
+def get_model_ready_data(train_raw, stores, features_raw, split_date="2012-01-01"):
+    df = merge_and_enrich(train_raw, stores, features_raw)
     
-    num_features = ['Size', 'Temperature', 'Fuel_Price', 'MarkDown1', 'MarkDown2', 
-                    'MarkDown3', 'MarkDown4', 'MarkDown5', 'CPI', 'Unemployment', 
-                    'Year', 'Month', 'Week', 'Day', 'IsHoliday', 'Has_Markdown',
-                    'Month_Sin', 'Month_Cos', 'Week_Sin', 'Week_Cos']
-    cat_features = ['Type']
-    features_list = num_features + cat_features
+    df['WeekOfYear'] = df['Date'].dt.isocalendar().week.astype(int)
+    df['Year'] = df['Date'].dt.year
     
-    train_mask = df_clean['Date'] < split_date
-    val_mask = df_clean['Date'] >= split_date
+    df['Is_Black_Friday'] = ((df['Date'].dt.month == 11) & (df['Date'].dt.day >= 23) & (df['Date'].dt.day <= 29)).astype(int)
+    df['Pre_Christmas'] = (df['WeekOfYear'] == 51).astype(int)
+    df['IsHoliday'] = df['IsHoliday'].astype(int)
     
-    X_train = df_clean[train_mask][features_list]
-    y_train = df_clean[train_mask]['Weekly_Sales']
-    X_val = df_clean[val_mask][features_list]
-    y_val = df_clean[val_mask]['Weekly_Sales']
-    is_holiday_val = df_clean[val_mask]['IsHoliday']
+    df['Store_Dept'] = df['Store'].astype(str) + "_" + df['Dept'].astype(str)
     
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('cat', OneHotEncoder(handle_unknown='ignore'), cat_features),
-            ('num', 'passthrough', num_features)
-        ]
-    )
+    df = df.sort_values(by=['Store', 'Dept', 'Date']).reset_index(drop=True)
+    df['Fuel_Price_Delta'] = df.groupby(['Store', 'Dept'])['Fuel_Price'].diff().fillna(0)
+    df['CPI_Delta'] = df.groupby(['Store', 'Dept'])['CPI'].diff().fillna(0)
+    df['Unemployment_Delta'] = df.groupby(['Store', 'Dept'])['Unemployment'].diff().fillna(0)
     
-    return X_train, y_train, X_val, y_val, is_holiday_val, preprocessor
+    train_mask = df['Date'] < pd.to_datetime(split_date)
+    val_mask = df['Date'] >= pd.to_datetime(split_date)
+    
+    train_df = df[train_mask].copy()
+    val_df = df[val_mask].copy()
+    
+    y_train = train_df['Weekly_Sales']
+    y_val = val_df['Weekly_Sales']
+    is_holiday_val = val_df['IsHoliday'].values
+    
+    categorical_features = ['Store_Dept', 'Type']
+    numeric_features = [
+        'Temperature', 'Fuel_Price_Delta', 'CPI_Delta', 'Unemployment_Delta', 
+        'MarkDown1', 'MarkDown2', 'MarkDown3', 'MarkDown4', 'MarkDown5',
+        'Size', 'WeekOfYear', 'Is_Black_Friday', 'Pre_Christmas', 'IsHoliday'
+    ]
+    
+    num_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='median')),
+        ('scaler', StandardScaler())
+    ])
+    
+    cat_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
+        ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+    ])
+    
+    preprocessor = ColumnTransformer(transformers=[
+        ('num', num_transformer, numeric_features),
+        ('cat', cat_transformer, categorical_features)
+    ], remainder='drop')
+    
+    X_train_transformed = preprocessor.fit_transform(train_df[numeric_features + categorical_features])
+    X_val_transformed = preprocessor.transform(val_df[numeric_features + categorical_features])
+    
+    return X_train_transformed, y_train, X_val_transformed, y_val, is_holiday_val, preprocessor
