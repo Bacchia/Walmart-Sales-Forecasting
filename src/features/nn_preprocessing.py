@@ -21,7 +21,36 @@ Typical use in a notebook:
 import numpy as np
 import pandas as pd
 
-from src.features.preprocessing import merge_and_enrich
+def _nn_merge_and_enrich(train_raw, stores, features_raw):
+    """Merge the raw files and build the features the neural models need.
+
+    Self-contained (does not depend on src.features.preprocessing), so changes to the
+    tree-side preprocessing cannot break the neural pipeline.
+    """
+    df = train_raw.copy()
+    df["Date"] = pd.to_datetime(df["Date"])
+    feats = features_raw.copy()
+    feats["Date"] = pd.to_datetime(feats["Date"])
+    feats = feats.drop(columns=["IsHoliday"], errors="ignore")
+    df = df.merge(stores, on="Store", how="left")
+    df = df.merge(feats, on=["Store", "Date"], how="left")
+
+    md = ["MarkDown1", "MarkDown2", "MarkDown3", "MarkDown4", "MarkDown5"]
+    df[md] = df[md].fillna(0)
+    df["Has_Markdown"] = (df[md].sum(axis=1) > 0).astype(int)
+    df["CPI"] = df["CPI"].fillna(df["CPI"].median())
+    df["Unemployment"] = df["Unemployment"].fillna(df["Unemployment"].median())
+
+    df["Year"] = df["Date"].dt.year
+    df["Month"] = df["Date"].dt.month
+    df["Week"] = df["Date"].dt.isocalendar().week.astype(int)
+    df["Day"] = df["Date"].dt.day
+    df["IsHoliday"] = df["IsHoliday"].astype(int)
+    df["Month_Sin"] = np.sin(2 * np.pi * df["Month"] / 12)
+    df["Month_Cos"] = np.cos(2 * np.pi * df["Month"] / 12)
+    df["Week_Sin"] = np.sin(2 * np.pi * df["Week"] / 52)
+    df["Week_Cos"] = np.cos(2 * np.pi * df["Week"] / 52)
+    return df
 
 # Walmart weekly data is stamped on Fridays -> weekly frequency anchored to Friday.
 FREQ = "W-FRI"
@@ -80,7 +109,7 @@ def _fill_series_gaps(df):
 
 def build_long_df(train_raw, stores, features, fill_gaps=True):
     """Return the neuralforecast-ready long dataframe (unique_id, ds, y, exog)."""
-    df = merge_and_enrich(train_raw, stores, features)
+    df = _nn_merge_and_enrich(train_raw, stores, features)
 
     df["unique_id"] = df["Store"].astype(str) + "_" + df["Dept"].astype(str)
     df = df.rename(columns={"Date": "ds", "Weekly_Sales": "y"})
@@ -137,7 +166,7 @@ def get_real_validation(train_raw, stores, features, split_date="2012-01-01"):
     Date >= split_date), so WMAE computed here is directly comparable to the
     tree/tabular models. Columns: unique_id, ds, y, IsHoliday.
     """
-    df = merge_and_enrich(train_raw, stores, features)
+    df = _nn_merge_and_enrich(train_raw, stores, features)
     df = df[df["Date"] >= pd.Timestamp(split_date)].copy()
     df["unique_id"] = df["Store"].astype(str) + "_" + df["Dept"].astype(str)
     df = df.rename(columns={"Date": "ds", "Weekly_Sales": "y"})
