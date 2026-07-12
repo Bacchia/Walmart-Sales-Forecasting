@@ -1,12 +1,16 @@
 data:
-  split_date: "2012-01-01"
-model:
-  params:
-    seq_len: 52
-    pred_len: 43
+  split_date: "2012-04-01"
+
 ensemble:
   search_space:
-    - {xgb: 0.4, lgb: 0.1, nn: 0.5}
-    - {xgb: 0.3, lgb: 0.2, nn: 0.5}
-    - {xgb: 0.4, lgb: 0.2, nn: 0.4}
-    - {xgb: 0.3, lgb: 0.1, nn: 0.6}
+    - {xgb: 1.00, lgb: 0.00}
+    - {xgb: 0.90, lgb: 0.10}
+    - {xgb: 0.80, lgb: 0.20}
+    - {xgb: 0.70, lgb: 0.30}
+    - {xgb: 0.60, lgb: 0.40}
+    - {xgb: 0.50, lgb: 0.50}
+    - {xgb: 0.40, lgb: 0.60}
+    - {xgb: 0.30, lgb: 0.70}
+    - {xgb: 0.20, lgb: 0.80}
+    - {xgb: 0.10, lgb: 0.90}
+    - {xgb: 0.00, lgb: 1.00}
