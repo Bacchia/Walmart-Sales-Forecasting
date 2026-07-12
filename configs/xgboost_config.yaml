@@ -1,12 +1,36 @@
 model:
-  name: "Walmart_XGBoost_Upgraded_Baseline"
-  params:
-    n_estimators: 250
-    max_depth: 7
-    learning_rate: 0.05
-    subsample: 0.8
-    colsample_bytree: 0.8
+  name: "Walmart_XGBoost_Search"
+  # Shared across every candidate.
+  common:
+    objective: "reg:squarederror"
     random_state: 42
     n_jobs: -1
+  # Each entry is one candidate; we train + score all of them and keep the best.
+  search_space:
+    - n_estimators: 250
+      max_depth: 7
+      learning_rate: 0.05
+      subsample: 0.8
+      colsample_bytree: 0.8
+    - n_estimators: 500
+      max_depth: 8
+      learning_rate: 0.03
+      subsample: 0.8
+      colsample_bytree: 0.8
+    - n_estimators: 400
+      max_depth: 6
+      learning_rate: 0.05
+      subsample: 0.9
+      colsample_bytree: 0.7
+    - n_estimators: 600
+      max_depth: 10
+      learning_rate: 0.02
+      subsample: 0.7
+      colsample_bytree: 0.8
+    - n_estimators: 300
+      max_depth: 12
+      learning_rate: 0.05
+      subsample: 0.8
+      colsample_bytree: 0.9
 data:
   split_date: "2012-01-01"
