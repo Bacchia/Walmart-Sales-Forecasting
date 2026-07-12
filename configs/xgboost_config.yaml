@@ -1,5 +1,5 @@
 model:
-  name: "Walmart_XGBoost_Baseline"
+  name: "Walmart_XGBoost_Upgraded_Baseline"
   params:
     n_estimators: 250
     max_depth: 7
