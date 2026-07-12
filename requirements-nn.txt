@@ -12,3 +12,4 @@ jupyterlab>=4.0.0       # run the .ipynb notebooks in the browser
 ipykernel>=6.29.0       # Jupyter kernel for the venv
 prophet>=1.1.5          # classical statistical baseline (per-series forecasting)
 statsmodels>=0.14.0     # SARIMA classical statistical baseline
+timesfm[torch]>=2.0.0   # TimesFM pretrained foundation model (bonus, zero-shot)
