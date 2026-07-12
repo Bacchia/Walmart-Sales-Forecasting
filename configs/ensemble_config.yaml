@@ -2,7 +2,7 @@ data:
   split_date: "2012-01-01"
 model:
   params:
-    seq_len: 12
+    seq_len: 52
     pred_len: 43
 ensemble:
   search_space:
