@@ -1,12 +1,22 @@
 model:
   name: "Walmart_NBEATS"
-  params:
-    input_size: 52
-    max_steps: 1000
-    stack_types: ["identity", "identity"]
-    n_blocks: [3, 3]
+  common:
     scaler_type: "robust"
     start_padding_enabled: true
     random_seed: 42
+  # Candidate configs searched in the notebook; the best is kept for the pipeline.
+  search_space:
+    - input_size: 52
+      max_steps: 1000
+      stack_types: ["identity", "identity"]
+      n_blocks: [3, 3]
+    - input_size: 52
+      max_steps: 500
+      stack_types: ["identity", "trend", "seasonality"]
+      n_blocks: [1, 1, 1]
+    - input_size: 104
+      max_steps: 1000
+      stack_types: ["identity", "identity"]
+      n_blocks: [3, 3]
 data:
   split_date: "2012-01-01"
