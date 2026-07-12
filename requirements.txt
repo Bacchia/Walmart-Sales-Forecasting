@@ -2,6 +2,7 @@ numpy>=2.0.0
 pandas>=2.2.0
 scikit-learn>=1.6.0
 xgboost>=2.0.0
+lightgbm>=4.0.0
 mlflow>=3.14.0
 dagshub>=0.7.0
 pyyaml>=6.0.0

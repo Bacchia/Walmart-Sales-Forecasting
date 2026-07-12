@@ -6,8 +6,9 @@ the "long" panel format that Nixtla's `neuralforecast` expects:
 
     unique_id | ds (date) | y (target) | ...exogenous columns...
 
-Each `unique_id` is one Store+Dept series. We reuse the teammate's
-`merge_and_enrich` so cleaning/feature logic stays identical to the tree side.
+Each `unique_id` is one Store+Dept series. This module is self-contained
+(`_nn_merge_and_enrich` builds its own features), so tree-side preprocessing
+changes cannot break the neural pipeline.
 
 Typical use in a notebook:
 
