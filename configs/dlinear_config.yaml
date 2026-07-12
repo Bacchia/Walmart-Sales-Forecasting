@@ -1,5 +1,5 @@
 model:
-  name: "Walmart_DLinear_Tuned"
+  name: "Walmart_DLinear_Localized"
   params:
     seq_len: 52          
     pred_len: 43         
