@@ -2,6 +2,7 @@
 data/
 mlruns/
 saved_models/
+champion_artifacts/
 lightning_logs/
 *.zip
 submission*.csv
